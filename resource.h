@@ -37,6 +37,7 @@
 #define IDC_DATETIMEPICKER2             1015
 #define IDC_EDIT6                       1016
 #define IDC_EDIT7                       1017
+#define IDC_7                           1017
 #define IDC_SCROLLBAR2                  1019
 #define IDC_COMBO1                      1020
 #define IDC_ESTADO                      1020
@@ -68,22 +69,28 @@
 #define IDC_FOTOAGEN                    1048
 #define FOTOC                           1049
 #define IDC_FOTOPER                     1050
-#define ESPECIES                        1052
 #define ESPECIESCOMBO                   1052
 #define ADD                             1053
 #define IDC_CANCELAR                    1054
 #define IDC_MOD                         1055
 #define IDC_NOMOD                       1056
 #define OK                              1057
-#define IDC_FECHAAGENDA                 1058
-#define IDC_HORAAGENDA                  1059
-#define IDC_HORAREGISTRO                1060
-#define IDC_FECHAREGISTRO               1062
+#define IDC_FA                          1058
+#define IDC_HA                          1059
+#define IDC_H                           1060
 #define IDC_FOTOMOD                     1063
 #define IDC_FECHAMOD                    1064
 #define IDC_HORAMOD                     1065
 #define IDC_NUEVAESPECIE                1066
 #define AGREGAR_ES                      1067
+#define IDC_1                           1068
+#define IDC_2                           1069
+#define IDC_3                           1070
+#define IDC_4                           1071
+#define IDC_5                           1072
+#define IDC_6                           1073
+#define IDC_F                           1074
+#define IDCBORRRAR                      1075
 #define ID_LOL_LOL1                     32772
 #define ID_LOL_LOL2                     32773
 #define ID_LOL_LOL3                     32774
@@ -107,7 +114,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        140
 #define _APS_NEXT_COMMAND_VALUE         32786
-#define _APS_NEXT_CONTROL_VALUE         1068
+#define _APS_NEXT_CONTROL_VALUE         1076
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

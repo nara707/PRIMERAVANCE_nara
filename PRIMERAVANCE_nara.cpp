@@ -10,79 +10,72 @@
 #include <map>
 #include <vector>
 #include<windows.h>
-#include <fstream> 
+#include <fstream>
+#include <memory>
 
 #define MAX_LOADSTRING 100
-#define IDC_TIMER1 1000
+class CITAS;
+class DOCTOR;
+
+constexpr auto IDC_T = 1000;
 
 using namespace std;
 
 HWND hWnd = nullptr;
 
-//struct NODOLA {
-//    CITA* dato;
-//    NODOLA* siguiente;
-//};
-//struct CITAS {
-//    NODOLA* origen;
-//    NODOLA* fin;
-//}LISTACITAS;
-// Variables globales:
-struct DOCTOR {
-    DOCTOR* ante;
+
+class DOCTOR{
+public:
+    
     WCHAR nom[100];
     WCHAR contra[100];
     WCHAR ced[100];
     WCHAR us[15];
-    /*CITA* CITAS; */
-    DOCTOR* sig;
-    /*DOCTOR() : CITAS(nullptr) {} */
+    vector<shared_ptr<CITAS>> citas;
+    shared_ptr<DOCTOR> next;
+    shared_ptr<DOCTOR> previous;
 };
 
-struct CITAS {
-    CITAS* ante;
+class CITAS {
+public:
     WCHAR cliente[100];
     WCHAR masc[100];
     WCHAR tel[100];
     WCHAR motivo[100];
     WCHAR precio[100];
-    WCHAR year[100];
-    WCHAR month[100];
-    WCHAR day[100];
-    WCHAR hora[100];
-    WCHAR mn[100];
-    WCHAR seg[100];
-    DOCTOR* doctorAsociado;
-    CITAS* sig;
+    int year;
+    int month;
+    int day;
+    int hora;
+    int mn;
+    int seg;
+    WCHAR  estado[100];
+    WCHAR especie[100];
+    WCHAR us[100];
 
-    CITAS() : doctorAsociado(nullptr), ante(nullptr),  sig(nullptr) {
-        cliente[0] = L'\0';
-        masc[0] = L'\0';
-        motivo[0] = L'\0';
-        tel[0] = L'\0';
-        precio[0] = L'\0';
-        year[0] = L'\0';
-        month[0] = L'\0';
-        day[0] = L'\0';
-        hora[0] = L'\0';
-        mn[0] = L'\0';
-        seg[0] = L'\0';
-    }
+    
+    shared_ptr<DOCTOR> loggeado;  
+    shared_ptr<CITAS> next; 
+    shared_ptr<CITAS> ante; 
+    
 };
-struct Cerrar {
-    DOCTOR doctor;
-    CITAS citas;
-};
+//struct Cerrar {
+//    DOCTOR doctor;
+//    CITAS citas;
+//};
 
-struct especie {
-    especie* ante;
+class especie {
+public:
+   
     WCHAR ESP[100];
-    especie* sig;
+    shared_ptr<DOCTOR> Asociado; 
+    shared_ptr<especie> next;
+    shared_ptr<especie> ante;
 }/*lista_especie*/; 
 
 struct NODO_DOCTOR {
     DOCTOR* dato;
-    NODO_DOCTOR* siguiente;
+    NODO_DOCTOR* next;
     NODO_DOCTOR* ante;
 };
 
@@ -93,13 +86,13 @@ struct LISTA_DOCTORES {
 
 struct NODO_especie {
     especie* dato;
-    NODO_especie* siguiente;
+    NODO_especie* next;
     NODO_especie* ante;
 };
 
 struct NODO_CITA {
     CITAS* dato;
-    NODO_CITA* siguiente;
+    NODO_CITA* next;
     NODO_CITA* ante;
 };
 
@@ -114,16 +107,21 @@ struct lista_especie {
 
 };
 
+ 
+
 // Uso de las estructuras
 lista_especie lista_especies;
 LISTA_DOCTORES listaDoctores;
-NODO_DOCTOR* loggeado = NULL;
+NODO_DOCTOR* loggeado = nullptr;
 LISTA_CITAS listaCitas;
-NODO_especie* logesp = NULL;
+NODO_especie* logesp = nullptr;
+NODO_CITA* Asociado = nullptr;
+NODO_CITA* ses = nullptr; 
+
 
 map<wstring, DOCTOR> doctores;
 map<wstring, DOCTOR> agendaDoctores;
-#define IDC_TIMER1 1000
+map<wstring, especie> Especies;
 HINSTANCE hInst;                                // instancia actual
 WCHAR szTitle[MAX_LOADSTRING];                  // Texto de la barra de título
 WCHAR szWindowClass[MAX_LOADSTRING];            // nombre de clase de la ventana principal
@@ -142,18 +140,21 @@ LRESULT CALLBACK VENTANAESPECIECallback(HWND hWnd, UINT message, WPARAM wParam, 
 LRESULT CALLBACK MODIFICARCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 bool menu(int opcion, HWND ventana);  
 void eliminarListaCitas(LISTA_CITAS* listaCitas);
+void ordenarCitasPorMes();
 void eliminarListaDoctores(LISTA_DOCTORES* listaDoctores);
 DOCTOR* crearDoctor(WCHAR* us, WCHAR* contra, WCHAR* nom, WCHAR* ced);
 especie* crearespecie(WCHAR* ESP);
-CITAS* crearCita(WCHAR* cliente, WCHAR* masc, WCHAR* motivo, WCHAR* tel, WCHAR* precio, WCHAR* year, WCHAR* month, WCHAR* day, WCHAR* hora, WCHAR* mn, WCHAR* seg);
+CITAS* crearCita(WCHAR* cliente, WCHAR* masc, WCHAR* motivo, WCHAR* tel, WCHAR* precio, int year, int month, int day, int hora, int mn, int seg, WCHAR* estado,WCHAR* especie);
 NODO_DOCTOR* nuevoNodo(DOCTOR* dato);
 NODO_CITA* nuevoNodo(CITAS* dato);
 NODO_especie* nuevoNodo(especie* dato);
 NODO_DOCTOR* buscarUsuario(LISTA_DOCTORES* listaDoctores, WCHAR* buscar);
 NODO_CITA* buscarCita(LISTA_CITAS* listaCitas, WCHAR* buscar);
-NODO_especie* buscarespecie(lista_especie* listaespecies, WCHAR* buscar);
+NODO_especie* buscarespecie(lista_especie* lista_especies, WCHAR* buscar);
 NODO_DOCTOR* buscarDoctorPorUsuario(WCHAR* buscar);
 NODO_CITA* buscarCitaPorCliente(WCHAR* buscar);
+CITAS* eliminarCITA(WCHAR* cliente);
+NODO_especie* buscarEpeciePorEspecie(WCHAR* buscar);
 void agregarDoctorInicio(DOCTOR* dato);
 void agregarDoctorFinal(DOCTOR* dato);
 void agregarespecieFinal(especie* dato);
@@ -161,11 +162,13 @@ void agregarDoctorEnMedio(WCHAR* buscar, DOCTOR* dato);
 void agregarCitaInicio(CITAS* dato);
 void agregarCitaFinal(CITAS* dato);
 void agregarCitaEnMedio(WCHAR* buscar, CITAS* dato);
-void CerrarPrograma(HWND hWnd); 
+void CerrarPrograma(); 
 DOCTOR* obtenerDoctorSesion(const wstring& us);
 bool guardarDoctorEnArchivo(const DOCTOR& doctor);
 bool guardarCitaEnArchivo(const CITAS& cita);
-
+CITAS* eliminarCitaInicio();
+CITAS* eliminarCitaFinal();
+CITAS* eliminarCitaEnMedio(WCHAR* buscar);
 
 //NODO_DOCTOR* buscarDoctorPorUsuario(WCHAR* buscar);
 //void g_hSelectedImage();
@@ -214,7 +217,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     /*eliminarListaCitas(LISTA_CITAS * listaCitas);
     eliminarListaDoctores();
    */
-    /*CerrarPrograma(hWnd); */
+    CerrarPrograma(); 
     return (int)msg.wParam;
 }
 
@@ -342,10 +345,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             DestroyWindow(hWnd); 
             break;
 
-        //case WM_CLOSE: 
-        //    // En el mensaje de cierre de ventana, llamar a la función de cierre seguro
-        //    CerrarPrograma(hWnd); 
-        //    break; 
 
             //default:
             //    return DefWindowProc(hWnd, message, wParam, lParam);
@@ -360,6 +359,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         EndPaint(hWnd, &ps);
     }
     break;
+     
+    case WM_CLOSE: 
+        // En el mensaje de cierre de ventana, llamar a la función de cierre seguro
+        DestroyWindow(hWnd);  
+
+        break;
     case WM_DESTROY:
         PostQuitMessage(0);  
         break;
@@ -399,47 +404,147 @@ LRESULT CALLBACK AGENDACallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
         {
             SendMessage(GetDlgItem(hWnd, IDC_FOTOAGEN), STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)g_hSelectedImage);
         }
-
+        ordenarCitasPorMes(); 
+        Asociado = listaCitas.origen;
+            while(Asociado!=NULL)
+            {
+                if (wcscmp(Asociado->dato->us, loggeado->dato->us) == 0) {
+                    wstring fecha = to_wstring(Asociado->dato->day) + L"/" + to_wstring(Asociado->dato->month) + L"/" + to_wstring(Asociado->dato->year); 
+                    wstring hora = to_wstring(Asociado->dato->hora) + L":" + to_wstring(Asociado->dato->mn) + L":" + to_wstring(Asociado->dato->seg); 
+                    SendMessage(GetDlgItem(hWnd, IDC_LIST1), LB_ADDSTRING, 0, (LPARAM)(fecha + hora).c_str()); 
+                }
+                  
+                Asociado = Asociado->next; 
+            }
     } break;
 
     case WM_COMMAND: 
     {
 
-        int wmId = LOWORD(wParam);
+        int id = LOWORD(wParam);
         int wmEvent = HIWORD(wParam);
-        if (menu(wmId, hWnd)) 
-        {
+        if (menu(id, hWnd)) 
+        
             return FALSE;
-        }
-        switch (wmId) 
-        {
-        case AGENDAR: 
-        {
-            HWND ventana = CreateDialog(hInst, MAKEINTRESOURCE(CITA), NULL, VENTANACITACallback);
-            ShowWindow(ventana, SW_SHOW);
-            EndDialog(hWnd, 0); 
-        } break;
-        case IDC_MOD: {
+        
+        if (LOWORD(wParam) == IDC_MOD) { 
+
             HWND ventana = CreateDialog(hInst, MAKEINTRESOURCE(MODIFICAR), NULL, MODIFICARCallback);
             ShowWindow(ventana, SW_SHOW);
-            EndDialog(hWnd, 0);
-        }break;
-        case IDM_EXIT: 
-            DestroyWindow(hWnd); 
-            break; 
+            EndDialog(hWnd, 0); 
+
         }
+        if (LOWORD(wParam) == AGENDAR) { 
+
+            HWND ventana = CreateDialog(hInst, MAKEINTRESOURCE(CITA), NULL, VENTANACITACallback);
+            ShowWindow(ventana, SW_SHOW);
+            EndDialog(hWnd, 0);
+
+        }
+
+        /*switch (id) 
+        {*/
+        if (LOWORD(wParam) == IDC_LIST1) {
+
+            switch (HIWORD(wParam)) {
+
+            case LBN_DBLCLK: {
+
+                WCHAR texto[50] = {0};
+                int seleccion = 0;
+
+                seleccion = SendDlgItemMessage(hWnd, IDC_LIST1, LB_GETCURSEL, 0, 0);
+                SendDlgItemMessage(hWnd, IDC_LIST1, LB_GETTEXT, seleccion, (LPARAM)texto);
+
+               /* int len = WideCharToMultiByte(CP_ACP, 0, texto, -1, NULL, 0, NULL, NULL);
+                wchar_t* texto_wide = new wchar_t[len];
+                MultiByteToWideChar(CP_ACP, 0, texto, -1, texto_wide, len);*/
+
+                ses = listaCitas.origen; 
+
+                while (ses != nullptr) 
+                {
+                    wstring fecha = to_wstring(ses->dato->day) + L"/" + to_wstring(ses->dato->month) + L"/" + to_wstring(ses->dato->year); 
+                    wstring hora = to_wstring(ses->dato->hora) + L":" + to_wstring(ses->dato->mn) + L":" + to_wstring(ses->dato->seg); 
+                   
+                
+
+
+                if (ses->dato != nullptr && ses->dato->cliente != nullptr && wcscmp(texto, (fecha + hora).c_str()) == 0)  
+                {
+
+                    SetDlgItemText(hWnd, IDC_1, ses->dato->cliente);
+                    SetDlgItemText(hWnd, IDC_3, ses->dato->tel);
+                    SetDlgItemText(hWnd, IDC_2, ses->dato->masc);
+                    SetDlgItemText(hWnd, IDC_5, ses->dato->motivo);
+                    SetDlgItemText(hWnd, IDC_6, ses->dato->precio);
+                    SetDlgItemText(hWnd, IDC_EDIT7, ses->dato->estado); 
+                    SetDlgItemText(hWnd, IDC_FA, to_wstring(ses->dato->day).c_str());
+                    SetDlgItemText(hWnd, IDC_HA, to_wstring(ses->dato->hora).c_str());
+                    SetDlgItemText(hWnd, IDC_EDIT4, ses->dato->especie); 
+                    break;
+                }
+                ses = ses->next; 
+                }
+                /*delete[] texto_wide;*/
+            }break;
+
+            }
+
+
+        }
+        if (LOWORD(wParam) == IDCBORRRAR) { 
+
+            WCHAR* cliente = ses->dato->cliente;
+            eliminarCITA(cliente);
+            SendMessage(GetDlgItem(hWnd, IDC_LIST1), LB_RESETCONTENT, 0, 0);
+
+            Asociado = listaCitas.origen; 
+
+            while (Asociado != nullptr) {
+
+                SendMessage(GetDlgItem(hWnd, IDC_LIST1), LB_ADDSTRING, 0, (LPARAM)Asociado->dato->cliente); 
+                Asociado = Asociado->next;  
+
+            }
+
+            SetDlgItemText(hWnd, IDC_1, (WCHAR*)" ");
+            SetDlgItemText(hWnd, IDC_2, (WCHAR*)" ");
+            SetDlgItemText(hWnd, IDC_3, (WCHAR*)" ");
+            SetDlgItemText(hWnd, IDC_4, (WCHAR*)" ");
+            SetDlgItemText(hWnd, IDC_5, (WCHAR*)" ");
+            SetDlgItemText(hWnd, IDC_6, (WCHAR*)" ");
+            SetDlgItemText(hWnd, IDC_7, (WCHAR*)" ");
+            SetDlgItemText(hWnd, IDC_HA, (WCHAR*)" ");
+            SetDlgItemText(hWnd, IDC_FA, (WCHAR*)" "); 
+
+
+
+        }
+       
 
         //default:
         //    return DefWindowProc(hWnd, message, wParam, lParam); 
     }break;
-    //case WM_CLOSE:
-    //    // En el mensaje de cierre de ventana, llamar a la función de cierre seguro
-    //    CerrarPrograma(hWnd);
-    //    break;
+    case WM_CLOSE: {
+
+        int res = MessageBox(hWnd, L"¿Realmente deseas salir?", L"ALERTA", MB_OKCANCEL | MB_ICONWARNING);
+
+        if (res == IDOK)
+        {
+           
+            EndDialog(hWnd, 0);
+        }
+
+    }break;
 
     case WM_DESTROY: 
         PostQuitMessage(0);
-        break; 
+        break;
+    /*case default:
+    {
+        return FALSE;
+    }break;*/
     }
 
     return FALSE;
@@ -456,20 +561,21 @@ LRESULT CALLBACK VENTANACITACallback(HWND hWnd, UINT message, WPARAM wParam, LPA
         /*NODO_CITA* logged = listaCitas.origen;
         while (loggeado != NULL) {
             SendMessage(GetDlgItem(hwnd, IDC))
-        }
-        SetDlgItemText(hWnd, IDC_NOMCITA, loggeado->dato->nom); */
-        NODO_especie* nodoActual = lista_especies.origen;
+        }*/
+        SetDlgItemText(hWnd, IDC_NOMCITA, loggeado->dato->nom); 
+        /*NODO_especie* nodoActual = lista_especies.origen;*/
 
         if (g_hSelectedImage != nullptr)
         {
             SendMessage(GetDlgItem(hWnd, FOTOC), STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)g_hSelectedImage); 
         }
-        HWND hListBox = GetDlgItem(hWnd, IDC_ESPECIE);
-        while(nodoActual != nullptr) {
-            especie* logesp = nodoActual->dato; 
-            
-            SendMessage(hListBox, LB_ADDSTRING, 0, (LPARAM)logesp->ESP); 
-            nodoActual = nodoActual->siguiente; 
+        /*HWND hListBox = GetDlgItem(hWnd, IDC_ESPECIE);*/
+
+        /*NODO_especie* nodo_especie = buscarEpeciePorEspecie(ESP);*/
+        logesp = lista_especies.origen; 
+        while(logesp != NULL) { 
+            SendMessage(GetDlgItem(hWnd,IDC_ESPECIE), CB_ADDSTRING, 0, (LPARAM)logesp->dato->ESP);  
+            logesp = logesp->next;  
 
         }
   
@@ -507,6 +613,10 @@ LRESULT CALLBACK VENTANACITACallback(HWND hWnd, UINT message, WPARAM wParam, LPA
 
         case ACEPTAR: 
         {
+            SYSTEMTIME fecha;
+            SYSTEMTIME hora;
+            DateTime_GetSystemtime(GetDlgItem(hWnd, IDC_H), &hora); 
+            DateTime_GetSystemtime(GetDlgItem(hWnd, IDC_F), &fecha);   
 
             WCHAR cliente[100] = { 0 };
             GetDlgItemText(hWnd, IDC_NOM, cliente, 100);
@@ -518,75 +628,58 @@ LRESULT CALLBACK VENTANACITACallback(HWND hWnd, UINT message, WPARAM wParam, LPA
             GetDlgItemText(hWnd, IDC_MOT, motivo, 100);
 
             WCHAR tel[100] = { 0 };
-            GetDlgItemText(hWnd, IDC_MOT, tel, 100);
+            GetDlgItemText(hWnd, IDC_TEL, tel, 100);
 
             WCHAR precio[100] = { 0 };
-            GetDlgItemText(hWnd, IDC_MOT, precio, 100);
-
-            WCHAR day[100] = { 0 };
-            GetDlgItemText(hWnd, IDC_MOT, day, 100);
-
-            WCHAR month[100] = { 0 };
-            GetDlgItemText(hWnd, IDC_MOT, month, 100);
-
-            WCHAR year[100] = { 0 };
-            GetDlgItemText(hWnd, IDC_MOT, year, 100);
-
-            WCHAR hora[100] = { 0 };
-            GetDlgItemText(hWnd, IDC_MOT, hora, 100);
-
-            WCHAR seg[100] = { 0 };
-            GetDlgItemText(hWnd, IDC_MOT, seg, 100);
+            GetDlgItemText(hWnd, IDC_COST, precio, 100);
 
             
-            WCHAR mn[100] = { 0 };
-            GetDlgItemText(hWnd, IDC_MOT, mn, 100);
 
-           /* int telefono = GetDlgItemInt(hWnd, IDC_TEL, NULL, FALSE);
+         
+            WCHAR estado[100] = { 0 };
+            GetDlgItemText(hWnd, IDC_7, estado, 100);
 
-            SYSTEMTIME date = { 0 };
-            HWND datepicker = GetDlgItem(hWnd, IDC_DATETIMEPICKER1);
-            DateTime_GetSystemtime(datepicker, &date);
-            int year = date.wYear;
-            int month = date.wMonth;
-            int day = date.wDay;*/
+            WCHAR especie[100] = { 0 };
+            GetDlgItemText(hWnd, IDC_4, especie, 100);
 
-
-            /*SYSTEMTIME time = { 0 };
-            HWND timepicker = GetDlgItem(hWnd, IDC_DATETIMEPICKER2);
-            DateTime_GetSystemtime(timepicker, &time);
-            int hora = time.wHour;
-            int mn = time.wMinute;
-            int seg = time.wSecond;*/
-
-
-
-            //WCHAR precioStr[255] = { 0 };
-            //GetDlgItemText(hWnd, IDC_COST, precioStr, 255);
-            //float precio = 0.0f;
-            //swscanf_s(precioStr, L"%f", &precio);
-
-
-            agregarCitaFinal(crearCita(cliente, mascota, motivo, tel, precio, year, month, day, hora, mn, seg));
-            MessageBox(hWnd, L"CITA", L"CITA GUARDADA >.O", MB_OK|MB_ICONHAND);
            
+
+            int dia = (fecha.wDay);
+            int mes = (fecha.wMonth);
+            int anio = (fecha.wYear);
+            int horas = (hora.wHour);
+            int minutos = (hora.wMinute);
+            int segundos = (hora.wSecond);
+
+            agregarCitaFinal(crearCita(cliente, mascota, motivo, tel, precio, anio, mes, dia, horas, minutos, segundos, estado, especie));
+            MessageBox(hWnd, L"CITA", L"CITA GUARDADA >.O", MB_OK|MB_ICONINFORMATION);
+
+            HWND ventana = CreateDialog(hInst, MAKEINTRESOURCE(AGENDA), NULL, AGENDACallback);
+            ShowWindow(ventana, SW_SHOW);
+            
+            EndDialog(hWnd, 0); 
+
         }break;
         
         case ADD: 
         {
             HWND ventana = CreateDialog(hInst, MAKEINTRESOURCE(ESPECIE), NULL, VENTANAESPECIECallback);
             ShowWindow(ventana, SW_SHOW);
+
             EndDialog(hWnd, 0);
         }break;
 
         /*case IDM_EXIT:   
             DestroyWindow(hWnd);  
             break; */
-
+        /*case default:
+            {
+            return FALSE;
+            }*/
         }
     }break;
     case WM_CLOSE:{
-        CerrarPrograma(hWnd);
+        CerrarPrograma();
         EndDialog(hWnd, 0);
     }break;
 
@@ -595,6 +688,10 @@ LRESULT CALLBACK VENTANACITACallback(HWND hWnd, UINT message, WPARAM wParam, LPA
         break;
         //default:
         //    return DefWindowProc(hWnd, message, wParam, lParam);
+    /*case default:
+        {
+        return FALSE;
+        }*/
     }
 
     return FALSE;
@@ -682,6 +779,10 @@ LRESULT CALLBACK REGISTROCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM
         }
     }break;
 
+    case WM_CLOSE:
+        DestroyWindow(hWnd);
+        break;
+
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
@@ -722,6 +823,11 @@ LRESULT CALLBACK LOGCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 
         }
     }break;
+
+    case WM_CLOSE:
+        DestroyWindow(hWnd);
+        break;
+
     case WM_DESTROY: 
         PostQuitMessage(0); 
         break; 
@@ -767,7 +873,10 @@ LRESULT CALLBACK VENTANAESPECIECallback(HWND hWnd, UINT message, WPARAM wParam, 
             GetDlgItemText(hWnd, IDC_NUEVAESPECIE, ESP, 255);  
 
             agregarespecieFinal(crearespecie(ESP));
-
+            HWND ventana = CreateDialog(hInst, MAKEINTRESOURCE(CITA), NULL, VENTANACITACallback);
+            ShowWindow(ventana, SW_SHOW);
+           
+            EndDialog(hWnd, 0); 
             SendMessage(
                 GetDlgItem(hWnd, ESPECIESCOMBO),
                 LB_ADDSTRING,
@@ -886,31 +995,33 @@ bool menu(int opcion, HWND ventana) {
         
     } break;
     case IDC_ESTADO: {  
-       /* int res = MessageBox(hwnd, L"DESEA CERRAR EL PROGRAMA?", L"SALIR", MB_OKCANCEL | MB_ICONINFORMATION);
+       
+    } break;
+    case IDM_EXIT: {
+
+        int res = MessageBox(hWnd, L"¿Realmente deseas salir?", L"ALERTA", MB_OKCANCEL | MB_ICONWARNING);
+
         if (res == IDOK)
         {
-            f
-        }*/
-    } break;
+            CerrarPrograma();
 
-    /*case IDM_EXIT: 
-        DestroyWindow(hWnd); 
-        break;*/ 
+        }
 
-    default: return false;
+    }break;
+    default: {return false; }break;
     }
     return true; 
 } 
 
 void eliminarListaCitas(LISTA_CITAS* listaCitas) {
     NODO_CITA* actual = listaCitas->origen;
-    NODO_CITA* siguiente = nullptr;
+    NODO_CITA* Asociado = nullptr;
 
     while (actual != nullptr) {
-        siguiente = actual->siguiente;
+        Asociado = actual->next; 
         delete actual->dato; // Liberar memoria del dato CITA
         delete actual;       // Liberar memoria del nodo NODO_CITA
-        actual = siguiente;
+        actual = Asociado;
     }
 
     // Reiniciar la lista, estableciendo origen y fin como nullptr
@@ -919,13 +1030,13 @@ void eliminarListaCitas(LISTA_CITAS* listaCitas) {
 }
 void eliminarListaDoctores(LISTA_DOCTORES* listaDoctores) {
     NODO_DOCTOR* actual = listaDoctores->origen;
-    NODO_DOCTOR* siguiente = nullptr;
+    NODO_DOCTOR* loggeado = nullptr;
 
     while (actual != nullptr) {
-        siguiente = actual->siguiente;
+        loggeado = actual->next;
         delete actual->dato; // Liberar memoria del dato DOCTOR
         delete actual;       // Liberar memoria del nodo NODO_DOCTOR
-        actual = siguiente;
+        actual = loggeado;
     }
 
     // Reiniciar la lista, estableciendo origen y fin como nullptr
@@ -940,20 +1051,21 @@ DOCTOR* crearDoctor(WCHAR* us, WCHAR* contra, WCHAR* nom, WCHAR* ced) {
     wcscpy_s(nuevoDoctor->ced, 100, ced);
     return nuevoDoctor;
 }
-CITAS* crearCita(WCHAR* cliente, WCHAR* masc, WCHAR* motivo, WCHAR* tel, WCHAR* precio, WCHAR* year, WCHAR* month, WCHAR* day, WCHAR* hora, WCHAR* mn, WCHAR* seg) {
+CITAS* crearCita(WCHAR* cliente, WCHAR* masc, WCHAR* motivo, WCHAR* tel, WCHAR* precio, int year, int month, int day, int hora, int mn, int seg, WCHAR* estado, WCHAR* especie) {
     CITAS* nuevoCita = new CITAS();
     wcscpy_s(nuevoCita->cliente, 100, cliente);
     wcscpy_s(nuevoCita->masc, 100, masc);
     wcscpy_s(nuevoCita->motivo, 100, motivo);
     wcscpy_s(nuevoCita->tel, 100, tel);
     wcscpy_s(nuevoCita->precio, 100, precio);
-    wcscpy_s(nuevoCita->year, 100, year);
-    wcscpy_s(nuevoCita->day, 100, day);
-    wcscpy_s(nuevoCita->month, 100, month); 
-    wcscpy_s(nuevoCita->hora, 100, hora); 
-    wcscpy_s(nuevoCita->mn, 100, mn);
-    wcscpy_s(nuevoCita->seg, 100, seg); 
-
+    nuevoCita->year= year;
+    nuevoCita->day= day;
+    nuevoCita->month= month; 
+    nuevoCita->hora= hora; 
+    nuevoCita->mn= mn;
+    nuevoCita->seg=seg;
+    wcscpy_s(nuevoCita->estado, 100, estado);
+    wcscpy_s(nuevoCita->especie, 100, especie);
 
     
 
@@ -962,7 +1074,7 @@ CITAS* crearCita(WCHAR* cliente, WCHAR* masc, WCHAR* motivo, WCHAR* tel, WCHAR* 
 NODO_DOCTOR* nuevoNodo(DOCTOR* dato) {
     NODO_DOCTOR* nuevoNodoDoctor = new NODO_DOCTOR();
     nuevoNodoDoctor->dato = dato;
-    nuevoNodoDoctor->siguiente = nullptr;
+    nuevoNodoDoctor->next = nullptr; 
     nuevoNodoDoctor->ante = nullptr;
 
     return nuevoNodoDoctor;
@@ -970,25 +1082,25 @@ NODO_DOCTOR* nuevoNodo(DOCTOR* dato) {
 NODO_especie* nuevoNodo(especie* dato) {
     NODO_especie* nuevoNodoespecie = new NODO_especie();
     nuevoNodoespecie->dato = dato;
-    nuevoNodoespecie->siguiente = nullptr;
-    nuevoNodoespecie->ante = nullptr;
+    nuevoNodoespecie->next = nullptr;
+    nuevoNodoespecie->ante = nullptr; 
     return nuevoNodoespecie;
 }
 NODO_CITA* nuevoNodo(CITAS* dato) {
     NODO_CITA* nuevoNodoCita = new NODO_CITA();
     nuevoNodoCita->dato = dato;
-    nuevoNodoCita->siguiente = nullptr;
+    nuevoNodoCita->next = nullptr;
     nuevoNodoCita->ante = nullptr;
-
+    wcscpy_s(dato->us,100,loggeado->dato->us);
     return nuevoNodoCita;
 }
-NODO_especie* buscarespecie(lista_especie* listaespecies, WCHAR* buscar) {
-    NODO_especie* actual = listaespecies->origen;
+NODO_especie* buscarespecie(lista_especie* lista_especies, WCHAR* buscar) {
+    NODO_especie* actual = lista_especies->origen;
     while(actual != nullptr) {
         if (wcscmp(actual->dato->ESP, buscar) == 0) { 
             return actual;
         }
-        actual = actual->siguiente;
+        actual = actual->next; 
     }
     return nullptr; // No se encont)
 }
@@ -999,7 +1111,7 @@ NODO_DOCTOR* buscarUsuario(LISTA_DOCTORES* listaDoctores, WCHAR* buscar) {
         if (wcscmp(actual->dato->us, buscar) == 0) {
             return actual;
         }
-        actual = actual->siguiente;
+        actual = actual->next; 
     }
     return nullptr; // No se encontró el usuario
 }
@@ -1010,35 +1122,56 @@ NODO_CITA* buscarCita(LISTA_CITAS* listaCitas, WCHAR* buscar) {
         if (wcscmp(actual->dato->cliente, buscar) == 0) {
             return actual;
         }
-        actual = actual->siguiente;
+        actual = actual->next; 
     }
     return nullptr; // No se encontró la cita 
 }
 
 
 NODO_DOCTOR* buscarDoctorPorUsuario(WCHAR* buscar) {
+   /* if (listaDoctores.origen = NULL)
+        return NULL;*/
     NODO_DOCTOR* actual = listaDoctores.origen;
 
     while (actual != nullptr) {
         if (wcscmp(actual->dato->us, buscar) == 0 || wcscmp(actual->dato->us, buscar) == 0) {
             return actual; // Se encontró el doctor, se devuelve el nodo correspondiente
         }
-        actual = actual->siguiente;
+        actual = actual->next; 
     }
 
     return nullptr; // No se encontró el doctor en la lista
 }
 NODO_CITA* buscarCitaPorCliente(WCHAR* buscar) {
+    if (listaCitas.origen == nullptr) {
+        return nullptr; // La lista está vacía
+    }
+
     NODO_CITA* actual = listaCitas.origen;
 
     while (actual != nullptr) {
-        if (wcscmp(actual->dato->cliente, buscar) == 0) {
-            return actual; // Se encontró el doctor, se devuelve el nodo correspondiente
+        if (actual->dato != nullptr && wcscmp(actual->dato->cliente, buscar) == 0 && wcscmp(actual->dato->us, loggeado->dato->us) == 0) { 
+            return actual; // Se encontró el cliente, se devuelve el nodo correspondiente
         }
-        actual = actual->siguiente;
+        actual = actual->next;
     }
 
-    return nullptr; // No se encontró el doctor en la lista
+    return nullptr; // No se encontró el cliente en la lista
+}
+
+NODO_especie* buscarEpeciePorEspecie(WCHAR* buscar) {
+    /*if (listaCitas.origen = NULL)
+        return NULL;*/
+    NODO_especie* actual = lista_especies.origen;
+
+    while (actual != nullptr) {
+        if (wcscmp(actual->dato->ESP, buscar) == 0) {
+            return actual; 
+        }
+        actual = actual->next;
+    }
+
+    return nullptr;
 }
 void agregarDoctorInicio(DOCTOR* dato) {
     NODO_DOCTOR* nuevoNodoDoctor = nuevoNodo(dato);
@@ -1046,10 +1179,10 @@ void agregarDoctorInicio(DOCTOR* dato) {
     if (listaDoctores.origen == nullptr) {
         listaDoctores.origen = nuevoNodoDoctor;
         listaDoctores.fin = nuevoNodoDoctor;
-        nuevoNodoDoctor->siguiente = nullptr;
+        nuevoNodoDoctor->next = nullptr; 
     }
     else {
-        nuevoNodoDoctor->siguiente = listaDoctores.origen;
+        nuevoNodoDoctor->next = listaDoctores.origen;
         listaDoctores.origen->ante = nuevoNodoDoctor;
         listaDoctores.origen = nuevoNodoDoctor;
     }
@@ -1058,7 +1191,7 @@ void agregarDoctorInicio(DOCTOR* dato) {
 void agregarDoctorFinal(DOCTOR* dato) {
     NODO_DOCTOR* nuevoNodoDoctor = new NODO_DOCTOR();
     nuevoNodoDoctor->dato = dato;
-    nuevoNodoDoctor->siguiente = nullptr;
+    nuevoNodoDoctor->next = nullptr; 
 
     if (listaDoctores.origen == nullptr) {
         listaDoctores.origen = nuevoNodoDoctor;
@@ -1067,7 +1200,7 @@ void agregarDoctorFinal(DOCTOR* dato) {
     }
     else {
         nuevoNodoDoctor->ante = listaDoctores.fin;
-        listaDoctores.fin->siguiente = nuevoNodoDoctor;
+        listaDoctores.fin->next = nuevoNodoDoctor; 
         listaDoctores.fin = nuevoNodoDoctor;
     }
 }
@@ -1080,11 +1213,11 @@ void agregarDoctorEnMedio(WCHAR* buscar, DOCTOR* dato) {
     }
 
     NODO_DOCTOR* nuevoNodoDoctor = nuevoNodo(dato);
-    nuevoNodoDoctor->siguiente = busqueda->siguiente;
-    busqueda->siguiente = nuevoNodoDoctor;
-
-    if (nuevoNodoDoctor->siguiente != nullptr) {
-        nuevoNodoDoctor->siguiente->ante = nuevoNodoDoctor;
+    nuevoNodoDoctor->next = busqueda->next;
+    busqueda->next = nuevoNodoDoctor; 
+     
+    if (nuevoNodoDoctor->next != nullptr) {
+        nuevoNodoDoctor->next->ante = nuevoNodoDoctor; 
     }
     else {
         listaDoctores.fin = nuevoNodoDoctor; // Si se agregó al final, actualiza el fin 
@@ -1097,10 +1230,10 @@ void agregarCitaInicio(CITAS* dato) {
     if (listaCitas.origen == nullptr) {
         listaCitas.origen = nuevoNodoCita;
         listaCitas.fin = nuevoNodoCita;
-        nuevoNodoCita->siguiente = nullptr;
+        nuevoNodoCita->next = nullptr; 
     }
     else {
-        nuevoNodoCita->siguiente = listaCitas.origen;
+        nuevoNodoCita->next = listaCitas.origen;
         listaCitas.origen->ante = nuevoNodoCita;
         listaCitas.origen = nuevoNodoCita;
     }
@@ -1109,7 +1242,7 @@ void agregarCitaInicio(CITAS* dato) {
 void agregarCitaFinal(CITAS* dato) {
     NODO_CITA* nuevoNodoCita = new NODO_CITA();
     nuevoNodoCita->dato = dato;
-    nuevoNodoCita->siguiente = nullptr;
+    nuevoNodoCita->next = nullptr;
 
     if (listaCitas.origen == nullptr) {
         listaCitas.origen = nuevoNodoCita;
@@ -1118,7 +1251,7 @@ void agregarCitaFinal(CITAS* dato) {
     }
     else {
         nuevoNodoCita->ante = listaCitas.fin;
-        listaCitas.fin->siguiente = nuevoNodoCita;
+        listaCitas.fin->next = nuevoNodoCita; 
         listaCitas.fin = nuevoNodoCita;
     }
 }
@@ -1131,11 +1264,11 @@ void agregarCitaEnMedio(WCHAR* buscar, CITAS* dato) {
     }
 
     NODO_CITA* nuevoNodoCita = nuevoNodo(dato);
-    nuevoNodoCita->siguiente = busqueda->siguiente;
-    busqueda->siguiente = nuevoNodoCita;
+    nuevoNodoCita->next = busqueda->next; 
+    busqueda->next = nuevoNodoCita; 
 
-    if (nuevoNodoCita->siguiente != nullptr) {
-        nuevoNodoCita->siguiente->ante = nuevoNodoCita;
+    if (nuevoNodoCita->next != nullptr) { 
+        nuevoNodoCita->next->ante = nuevoNodoCita; 
     }
     else {
         listaCitas.fin = nuevoNodoCita; // Si se agregó al final, actualiza el fin 
@@ -1147,7 +1280,7 @@ DOCTOR* eliminarDoctorInicio() {
     if (listaDoctores.origen == listaDoctores.fin)
         listaDoctores.fin = nullptr;
     NODO_DOCTOR* anterior = listaDoctores.origen;
-    listaDoctores.origen = listaDoctores.origen->siguiente;
+    listaDoctores.origen = listaDoctores.origen->next; 
     DOCTOR* dato = anterior->dato;
     delete anterior;
     return dato;
@@ -1159,11 +1292,11 @@ DOCTOR* eliminarDoctorFinal() {
         return eliminarDoctorInicio();
 
     NODO_DOCTOR* indice = listaDoctores.origen;
-    while (indice != nullptr) {
-        if (indice->siguiente == listaDoctores.fin) {
+    while (indice != nullptr) { 
+        if (indice->next == listaDoctores.fin) {
             break;
         }
-        indice = indice->siguiente;
+        indice = indice->next;
     }
 
     DOCTOR* dato = listaDoctores.fin->dato;
@@ -1171,7 +1304,7 @@ DOCTOR* eliminarDoctorFinal() {
     listaDoctores.fin = indice;
 
     if (indice != nullptr)
-        indice->siguiente = nullptr;
+        indice->next = nullptr;
 
     return dato;
 }
@@ -1188,18 +1321,19 @@ DOCTOR* eliminarDoctorEnMedio(WCHAR* buscar) {
 
     NODO_DOCTOR* indice = listaDoctores.origen;
     while (indice != nullptr) {
-        if (indice->siguiente == busqueda)
+        if (indice->next == busqueda) 
             break;
-        indice = indice->siguiente;
+        indice = indice->next; 
     }
 
     DOCTOR* dato = busqueda->dato;
     if (indice != nullptr)
-        indice->siguiente = busqueda->siguiente;
+        indice->next = busqueda->next; 
 
     delete busqueda;
     return dato;
 }
+
 CITAS* eliminarCitaInicio() {
     if (listaCitas.origen == nullptr)
         return nullptr;
@@ -1207,10 +1341,10 @@ CITAS* eliminarCitaInicio() {
     if (listaCitas.origen == listaCitas.fin)
         listaCitas.fin = nullptr;
 
-    NODO_CITA* anterior = listaCitas.origen;
-    listaCitas.origen = listaCitas.origen->siguiente;
-    CITAS* dato = anterior->dato;
-    delete anterior;
+    NODO_CITA* ante = listaCitas.origen; 
+    listaCitas.origen = listaCitas.origen->next; 
+    CITAS* dato = ante->dato; 
+    delete ante; 
     return dato;
 }
 
@@ -1221,19 +1355,19 @@ CITAS* eliminarCitaFinal() {
     if (listaCitas.origen == listaCitas.fin)
         return eliminarCitaInicio();
 
-    NODO_CITA* indice = listaCitas.origen;
-    while (indice != nullptr) {
-        if (indice->siguiente == listaCitas.fin) {
+    NODO_CITA* ses = listaCitas.origen;
+    while (ses != nullptr) {
+        if (ses->next == listaCitas.fin) { 
             break;
         }
-        indice = indice->siguiente;
+        ses = ses->next; 
     }
 
     CITAS* dato = listaCitas.fin->dato;
     delete listaCitas.fin;
-    listaCitas.fin = indice;
-    if (indice != nullptr)
-        indice->siguiente = nullptr;
+    listaCitas.fin = ses;
+    if (ses != nullptr)
+        ses->next = nullptr; 
     return dato;
 }
 
@@ -1247,35 +1381,60 @@ CITAS* eliminarCitaEnMedio(WCHAR* buscar) {
     else if (busqueda == listaCitas.fin)
         return eliminarCitaFinal();
 
-    NODO_CITA* indice = listaCitas.origen;
-    while (indice != nullptr) {
-        if (indice->siguiente == busqueda)
+    NODO_CITA* ses = listaCitas.origen;
+    while (ses != nullptr) {
+        if (ses->next == busqueda) 
             break;
-        indice = indice->siguiente;
+        ses = ses->next; 
     }
 
     CITAS* dato = busqueda->dato;
-    if (indice != nullptr)
-        indice->siguiente = busqueda->siguiente;
+    if (ses != nullptr)
+        ses->next = busqueda->next;
 
     delete busqueda;
     return dato;
 }
-void CerrarPrograma(HWND hWnd) {
-    NODO_DOCTOR* dato = listaDoctores.origen;
-    fstream loggeado;
-    loggeado.open("DATOS.bin", ios::out | ios::binary | ios::trunc);
+CITAS* eliminarCITA(WCHAR* cliente) {
+    NODO_CITA* ses = buscarCitaPorCliente(cliente);
+    if (ses == nullptr)
+        return nullptr;
 
-    if (hWnd != NULL) {
-        NODO_DOCTOR* dato = listaDoctores.origen;
-        if(loggeado.is_open())
+    if (ses == listaCitas.origen)
+        return eliminarCitaInicio();
+    else if (ses == listaCitas.fin)
+        return eliminarCitaFinal();
+
+    NODO_CITA* anterior = ses->ante;
+    NODO_CITA* siguiente = ses->next;
+    CITAS* dato = ses->dato;
+
+    if (anterior != nullptr)
+        anterior->next = siguiente;
+    if (siguiente != nullptr)
+        siguiente->ante = anterior;
+
+    delete ses;
+    return dato;
+}
+
+
+
+void CerrarPrograma() {
+    NODO_DOCTOR* loggeado = listaDoctores.origen;  
+    fstream archivo; 
+    archivo.open("DATOS.bin", ios::out | ios::binary | ios::trunc);
+
+    if (loggeado != nullptr) { 
+        NODO_DOCTOR* loggeado = listaDoctores.origen; 
+        if(archivo.is_open())
         {
-            while (dato != NULL) {
-                loggeado.write((char*)dato, sizeof(doctores));
-                dato = dato->siguiente;
+            while (loggeado != nullptr) { 
+                archivo.write((char*)loggeado, sizeof(NODO_DOCTOR));
+                loggeado = loggeado->next;  
             }
         }
-        loggeado.close();
+        archivo.close();
     }
 }
 DOCTOR* obtenerDoctorSesion(const wstring& us) {
@@ -1314,7 +1473,7 @@ bool guardarCitaEnArchivo(const CITAS& cita) {
 void agregarespecieFinal(especie* dato) {
     NODO_especie* nuevoNodoespecie = new NODO_especie();
     nuevoNodoespecie->dato = dato;
-    nuevoNodoespecie->siguiente = nullptr;
+    nuevoNodoespecie->next = nullptr; 
 
     if (lista_especies.origen == nullptr) {
         lista_especies.origen = nuevoNodoespecie;
@@ -1323,7 +1482,7 @@ void agregarespecieFinal(especie* dato) {
     }
     else {
         nuevoNodoespecie->ante = lista_especies.fin;
-        lista_especies.fin->siguiente = nuevoNodoespecie;
+        lista_especies.fin->next = nuevoNodoespecie;
         lista_especies.fin = nuevoNodoespecie; 
     }
 }
@@ -1335,3 +1494,30 @@ especie* crearespecie(WCHAR* ESP) {
 //void SEGURO(HWND hwnd) {
 //    NODO_doctor*dato = Lista
 //}
+
+void ordenarCitasPorMes() {
+    bool swapped;
+    NODO_CITA* ptr1;
+    NODO_CITA* lptr = NULL;
+
+    if (listaCitas.origen == NULL)
+        return;
+
+    do {
+        swapped = false;
+        ptr1 = listaCitas.origen;
+
+       /* while (ptr1->next != lptr) {*/
+            //if (wcscmp(ptr1->dato->month, ptr1->next->dato->month) > 0) {
+            //    // Intercambiar las cadenas de caracteres de los meses de las citas
+            //    WCHAR temp[100]; // Ajusta el tamaño según tus necesidades
+            //    wcscpy_s(temp, ptr1->dato->month);
+            //    wcscpy_s(ptr1->dato->month, ptr1->next->dato->month);
+            //    wcscpy_s(ptr1->next->dato->month, temp);
+            //    swapped = true;
+            //}
+            //ptr1 = ptr1->next;
+     /*   }*/
+        lptr = ptr1;
+    } while (swapped);
+}
