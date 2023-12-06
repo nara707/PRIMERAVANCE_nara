@@ -1,4 +1,4 @@
-// PRIMERAVANCE_nara.cpp : Define el punto de entrada de la aplicación.
+// PRIMERAVANCE_nara.cpp : Define el punto de entrada de la aplicaciónaaaaaaaaaaaaaaaaaaaaaaaa.
 //
 
 #include "framework.h"
